@@ -1,7 +1,11 @@
 #!/bin/bash
 
-cd ../..
+# Go to the location where sources are
+cd ../../src/email_lambda
+zip -r ../../archives/email_lambda.zip ./*
 
+# Go back to root of the repo
+cd ../..
 ZIP_FILE="fileb://$(pwd)/archives/email_lambda.zip"
 echo $ZIP_FILE
 

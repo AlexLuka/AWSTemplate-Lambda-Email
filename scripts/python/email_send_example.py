@@ -52,7 +52,7 @@ BODY_HTML = """<html>
       AWS SDK for Python (Boto)</a>.</p>
 </body>
 </html>
-            """
+"""
 
 # The character encoding for the email.
 CHARSET = "UTF-8"

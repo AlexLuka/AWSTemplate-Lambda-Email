@@ -1,5 +1,7 @@
 import os
+import sys
 import boto3
+import logging
 
 from botocore.exceptions import ClientError
 
@@ -14,24 +16,42 @@ AWS_REGION = "us-east-1"
 CHARSET = "UTF-8"
 
 
-def run(*args, **kwargs):
-    print(f"Successfully executed lambda function with:")
-    print(f"args={args}")
-    print(f"Got {len(args)} input arguments")
-    print(f"kwargs={kwargs}")
+def init_logger(source, level=logging.DEBUG):
+    logger_ = logging.getLogger(source)
+    logger_.setLevel(level)
+
+    logger_handler = logging.StreamHandler(sys.stdout)
+    logger_handler.setLevel(level)
+
+    logger_formatter = logging.Formatter("[%(asctime)s][%(name)s][%(levelname)s] %(message)s")
+    logger_handler.setFormatter(logger_formatter)
+
+    logger_.addHandler(logger_handler)
+    return logger_
+
+
+def run(input_data, lambda_context, *args, **kwargs):
+    logger = init_logger(__name__)
+
+    logger.info(f"Successfully executed lambda function with:")
+    logger.info(f"input_data={input_data}")
+    logger.info(f"lambda_context={lambda_context}")
+    logger.info(f"args={args}")
+    logger.info(f"Got {len(args)} input arguments")
+    logger.info(f"kwargs={kwargs}")
 
     client = boto3.client('ses', region_name=AWS_REGION)
 
-    # Replace sender@example.com with your "From" address.
+    #
     # This address must be verified with Amazon SES.
     sender = f"Alexey Lukyanov <{os.environ.get('SES_EMAIL')}>"
 
     # This address must be verified until the account is in the sandbox
     recipient = os.environ.get('SES_VERIFIED_RECIPIENT')
 
-    print(f"Environment:")
-    print(f"sender={sender}")
-    print(f"recipient={recipient}")
+    logger.info(f"Environment:")
+    logger.info(f"sender={sender}")
+    logger.info(f"recipient={recipient}")
 
     # The subject line for the email.
     subject = "Amazon SES Test (SDK for Python)"
@@ -66,10 +86,12 @@ def run(*args, **kwargs):
             },
             Message={
                 'Body': {
+                    # This is an HTML version of the message
                     'Html': {
                         'Charset': CHARSET,
                         'Data': body_html,
                     },
+                    # This is a raw text version of the message for high-latency network
                     'Text': {
                         'Charset': CHARSET,
                         'Data': body_text,
@@ -87,7 +109,7 @@ def run(*args, **kwargs):
         )
     # Display an error if something goes wrong.
     except ClientError as e:
-        print(e.response['Error']['Message'])
+        logger.info(e.response['Error']['Message'])
     else:
-        print("Email sent! Message ID:"),
-        print(response['MessageId'])
+        logger.info("Email sent! Message ID:"),
+        logger.info(response['MessageId'])

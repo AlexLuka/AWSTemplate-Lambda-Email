@@ -6,7 +6,10 @@ LAMBDA_FUNCTON_NAME=SendEmail
 # Next...
 # Go to the location where sources are and create a zip archive
 cd ../../src/email_lambda
+cp ../../images/* .
 zip -r ../../archives/email_lambda.zip ./*
+
+rm *.jpg
 
 #
 # Then
